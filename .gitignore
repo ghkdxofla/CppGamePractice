@@ -33,3 +33,11 @@
 
 # Private directory
 private/
+
+# Visual studio files
+*.vcxproj
+*.user
+*.filters
+Debug/
+*.sln
+.vs/

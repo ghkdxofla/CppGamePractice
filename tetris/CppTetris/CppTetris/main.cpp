@@ -50,12 +50,15 @@ int main(){
 
 
 	// Set texture
-	sf::Texture t;
-	t.loadFromFile("image/tiles.png");
+	sf::Texture t1, t2, t3;
+	t1.loadFromFile("image/tiles.png");
+	t2.loadFromFile("image/background.png");
+	t3.loadFromFile("image/frame.png");
 
 
-	// Set sprite
-	sf::Sprite s(t);
+
+	// Set sprite, background and frame
+	sf::Sprite s(t1), background(t2), frame(t3);
 	s.setTextureRect(sf::IntRect(0, 0, 18, 18));
 
 	// Set feature of tetromino
@@ -153,6 +156,17 @@ int main(){
 			
 		}
 
+		// Check lines
+		int k = M - 1;
+		for (int i = M - 1; i > 0; i--) {
+			int count = 0;
+			for (int j = 0; j < N; j++) {
+				if (field[i][j]) count++;
+				field[k][j] = field[i][j];
+			}
+			if (count < N) k--;
+		}
+
 		// After block is moved...
 		dx = 0;
 		rotate = 0;
@@ -162,21 +176,24 @@ int main(){
 
 		// Set window background
 		window.clear(sf::Color::White);
+		window.draw(background);
 
 		for(int i = 0;i < M;i++)
 			for (int j = 0; j < N; j++) {
 				if (field[i][j] == 0) continue;
 				s.setTextureRect(sf::IntRect(field[i][j] * 18, 0, 18, 18));
 				s.setPosition(j * 18, i * 18);
+				s.move(28, 31); // 위치 이동
 				window.draw(s);
 			}
 
 		for (int i = 0; i < 4; i++) {
 			s.setTextureRect(sf::IntRect(colorNum * 18, 0, 18, 18));
 			s.setPosition(a[i].x * 18, a[i].y * 18);
+			s.move(28, 31); // 위치 이동
 			window.draw(s);
 		}
-		window.draw(s);
+		window.draw(frame);
 		window.display();
 	}
 	return 0;

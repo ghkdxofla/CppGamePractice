@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 * Author   : Taelim Hwang
 * Date     : 2018-09-11
 * Title    : Cpp Tetris
@@ -17,7 +17,7 @@ const int N = 10;
 int field[M][N] = { 0 };
 
 // Define point
-// Point¸¦ ¼³Á¤ ÇÔ°ú µ¿½Ã¿¡ ÇÒ´çÇÔ
+// Pointë¥¼ ì„¤ì • í•¨ê³¼ ë™ì‹œì— í• ë‹¹í•¨
 struct Point {
 	int x, y;
 } a[4], b[4];
@@ -33,7 +33,18 @@ int figures[7][4] = {
 	2, 3, 4, 5, // O
 };
 
+// í…ŒíŠ¸ë¡œë¯¸ë…¸ê°€ í™”ë©´ ë°–ì„ ë¹ ì ¸ë‚˜ê°€ê±°ë‚˜, ì´ë¯¸ ë¸”ë¡ì´ ìˆëŠ” ê³³ì¸ì§€ í™•ì¸
+bool check() {
+	for (int i = 0; i < 4; i++)
+		if (a[i].x < 0 || a[i].x >= N || a[i].y >= M) return 0;
+		else if (field[a[i].y][a[i].x]) return 0;
+	return 1;
+}
+
 int main(){
+	// Set random
+	srand(time(0));
+
 	// Init game window
 	sf::RenderWindow window(sf::VideoMode(320, 480), "The Tetris");
 
@@ -56,6 +67,12 @@ int main(){
 
 	sf::Clock clock;
 
+	// Fix bug : First block appears as a single one
+	a[0].x = 0, a[0].y = 1;
+	a[1].x = 1, a[1].y = 1;
+	a[2].x = 1, a[2].y = 2;
+	a[3].x = 1, a[3].y = 3;
+
 	// Window event codes
 	while (window.isOpen()) {
 		// Set timer
@@ -74,18 +91,29 @@ int main(){
 				window.close();
 
 			// Key pressed
-			if (e.type == sf::Event::KeyPressed)
+			if (e.type == sf::Event::KeyPressed) {
 				if (e.key.code == sf::Keyboard::Up) rotate = true;
 				else if (e.key.code == sf::Keyboard::Left) dx = -1;
 				else if (e.key.code == sf::Keyboard::Right) dx = 1;
+				
+				if (e.key.code == sf::Keyboard::Down) delay = 0.05;
+			}
+
 		}
 
 		// Move tetromino
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++) {
+			b[i] = a[i];
 			a[i].x += dx;
+		}
+		// Check tetromino
+		if (!check())
+			for (int i = 0; i < 4; i++)
+				a[i] = b[i];
+			
 
 		// Rotate tetromino
-		// ¾Ë°í¸®Áò ¹®Á¦¿¡¼­ È¸ÀüÇÏ´Â ºÎºĞÀ» ±¸ÇÒ ¶§ ¿ä±äÇÒµí
+		// ì•Œê³ ë¦¬ì¦˜ ë¬¸ì œì—ì„œ íšŒì „í•˜ëŠ” ë¶€ë¶„ì„ êµ¬í•  ë•Œ ìš”ê¸´í• ë“¯
 		if (rotate) {
 			Point p = a[1];
 			for (int i = 0; i < 4; i++) {
@@ -94,38 +122,57 @@ int main(){
 				a[i].x = p.x - x;
 				a[i].y = p.y + y;
 			}
+
+			// Check tetromino
+			if (!check())
+				for (int i = 0; i < 4; i++)
+					a[i] = b[i];
 		}
 
 		// Tick
 		if (timer > delay) {
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++) {
+				b[i] = a[i];
 				a[i].y += 1;
+			}
+			// Check tetromino
+			if (!check()) {
+				for (int i = 0; i < 4; i++)
+					field[b[i].y][b[i].x] = colorNum;
+
+				colorNum = 1 + rand() % 7;
+				int n = rand() % 7;
+				for (int i = 0; i < 4; i++) {
+					a[i].x = figures[n][i] % 2;
+					a[i].y = figures[n][i] / 2;
+				}
+			}
+				
 			timer = 0;
 
 			
 		}
 
-		// Make tetromino
-		int n = 3;
-		
-		// aÀÇ °ªÀÌ 0À¸·Î ÃÊ±âÈ­µÈ °æ¿ì ºí·ÏÀ» ³Ö¾îÁÖ´Â °Í
-		if (a[0].x == 0) {
-			for (int i = 0; i < 4; i++) {
-				a[i].x = figures[n][i] % 2;
-				a[i].y = figures[n][i] / 2;
-
-			}
-		}
-
 		// After block is moved...
 		dx = 0;
 		rotate = 0;
+		delay = 0.3;
+
+		// Draw tetromino
 
 		// Set window background
 		window.clear(sf::Color::White);
 
-		// Draw tetromino
+		for(int i = 0;i < M;i++)
+			for (int j = 0; j < N; j++) {
+				if (field[i][j] == 0) continue;
+				s.setTextureRect(sf::IntRect(field[i][j] * 18, 0, 18, 18));
+				s.setPosition(j * 18, i * 18);
+				window.draw(s);
+			}
+
 		for (int i = 0; i < 4; i++) {
+			s.setTextureRect(sf::IntRect(colorNum * 18, 0, 18, 18));
 			s.setPosition(a[i].x * 18, a[i].y * 18);
 			window.draw(s);
 		}

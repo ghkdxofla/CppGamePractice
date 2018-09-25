@@ -156,7 +156,7 @@ int main(){
 		// After block is moved...
 		dx = 0;
 		rotate = 0;
-		delay = 0.3;
+		delay = 0.3; 
 
 		// Draw tetromino
 
